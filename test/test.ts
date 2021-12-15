@@ -15,13 +15,13 @@ test('works', (t) => {
     function Component(){
         let $a = 1;
     
-        const onClick = () => {
+        const onPress = () => {
             $a += 1;
         }
     
         return <div>
             <p>{$a}</p>
-            <button onPress={onClick}>Press</button>
+            <button onClick={onPress}>Press</button>
         </div>;
     }
     `
