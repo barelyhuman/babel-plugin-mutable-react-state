@@ -92,41 +92,41 @@ test('Check Arrow Function Scope', (t) => {
 
 test('Multi Component Scope', (t) => {
   const code = `
-import * as React from "react";
+    import * as React from "react";
 
-let $b = 2;
+    let $b = 2;
 
-const Component = () => {
-  let $a = 1;
+    const Component = () => {
+    let $a = 1;
 
-  const onPress = () => {
-    $a += 1;
-    $b = 3;
-  };
+    const onPress = () => {
+        $a += 1;
+        $b = 3;
+    };
 
-  return (
-    <div>
-      <p>{$a}</p>
-      <button onClick={onPress}>Press</button>
-    </div>
-  );
-};
+    return (
+        <div>
+        <p>{$a}</p>
+        <button onClick={onPress}>Press</button>
+        </div>
+    );
+    };
 
-const ComponentTwo = () => {
-  let $a = 3;
+    const ComponentTwo = () => {
+    let $a = 3;
 
-  const onPress = () => {
-    $a = 5;
-    $b = 3;
-  };
+    const onPress = () => {
+        $a = 5;
+        $b = 3;
+    };
 
-  return (
-    <div>
-      <p>{$a}</p>
-      <button onClick={onPress}>Press</button>
-    </div>
-  );
-};
+    return (
+        <div>
+        <p>{$a}</p>
+        <button onClick={onPress}>Press</button>
+        </div>
+    );
+    };
 `
 
   const result = compile(code)
