@@ -1,60 +1,62 @@
 {
-	"name": "babel-transform-mutable-react-state",
-	"version": "0.0.0",
-	"main": "./dist/index.js",
-	"module": "./dist/index.mjs",
-	"types": "./dist/index.d.ts",
-	"engines": {
-		"node": ">=12"
-	},
-	"exports": {
-		"./package.json": "./package.json",
-		".": {
-			"require": "./dist/index.js",
-			"import": "./dist/index.mjs",
-			"types": "./dist/index.d.ts",
-			"default": "./dist/index.js"
-		}
-	},
-	"scripts": {
-		"build": "tsup source/index.ts --format cjs,esm --dts --clean",
-		"test": "ava",
-		"fix": "npx prettier --write source/* test/*",
-		"watch": "npm run build -- --watch source",
-		"prepublishOnly": "npm run build"
-	},
-	"dependencies": {
-		"@babel/types": "^7.16.0"
-	},
-	"devDependencies": {
-		"@babel/core": "^7.16.5",
-		"@babel/plugin-transform-react-jsx": "^7.16.5",
-		"@babel/preset-env": "^7.16.5",
-		"@babel/preset-react": "^7.16.5",
-		"@types/babel__core": "^7.1.17",
-		"@types/react": "^17.0.37",
-		"ava": "^3.15.0",
-		"prettier": "^2.5.1",
-		"ts-node": "^10.4.0",
-		"tsup": "^5.11.4",
-		"typescript": "^4.5.4"
-	},
-	"prettier": {
-		"bracketSpacing": false,
-		"semi": false,
-		"singleQuote": true,
-		"trailingComma": "es5",
-		"useTabs": false
-	},
-	"ava": {
-		"extensions": {
-			"ts": "module"
-		},
-		"nonSemVerExperiments": {
-			"configurableModuleFormat": true
-		},
-		"nodeArguments": [
-			"--loader=ts-node/esm"
-		]
-	}
+  "name": "babel-plugin-mutable-react-state",
+  "version": "0.0.0",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "engines": {
+    "node": ">=12"
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup source/index.ts --format cjs,esm --dts --clean",
+    "test": "ava",
+    "fix": "npx prettier --write source/* test/*",
+    "watch": "npm run build -- --watch source",
+    "prepublishOnly": "npm run build",
+    "release": "np --branch dev"
+  },
+  "dependencies": {
+    "@babel/types": "^7.16.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.16.5",
+    "@babel/plugin-transform-react-jsx": "^7.16.5",
+    "@babel/preset-env": "^7.16.5",
+    "@babel/preset-react": "^7.16.5",
+    "@types/babel__core": "^7.1.17",
+    "@types/react": "^17.0.37",
+    "ava": "^3.15.0",
+    "np": "^7.6.0",
+    "prettier": "^2.5.1",
+    "ts-node": "^10.4.0",
+    "tsup": "^5.11.4",
+    "typescript": "^4.5.4"
+  },
+  "prettier": {
+    "bracketSpacing": false,
+    "semi": false,
+    "singleQuote": true,
+    "trailingComma": "es5",
+    "useTabs": false
+  },
+  "ava": {
+    "extensions": {
+      "ts": "module"
+    },
+    "nonSemVerExperiments": {
+      "configurableModuleFormat": true
+    },
+    "nodeArguments": [
+      "--loader=ts-node/esm"
+    ]
+  }
 }
