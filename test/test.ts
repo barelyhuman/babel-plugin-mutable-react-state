@@ -3,13 +3,13 @@ import {transform} from '@babel/core'
 import plugin from '../'
 
 const compile = (code: string) =>
-	transform(code, {
-		presets: ['@babel/preset-react'],
-		plugins: [plugin],
-	})
+  transform(code, {
+    presets: ['@babel/preset-react'],
+    plugins: [plugin],
+  })
 
 test('Simple Transform', (t) => {
-	const code = `
+  const code = `
     import * as React from "react"
     
     function Component(){
@@ -26,15 +26,15 @@ test('Simple Transform', (t) => {
     }
     `
 
-	const result = compile(code)
-	if (!result) {
-		return t.fail()
-	}
-	t.snapshot(result.code)
+  const result = compile(code)
+  if (!result) {
+    return t.fail()
+  }
+  t.snapshot(result.code)
 })
 
 test('Check Functional Scope', (t) => {
-	const code = `
+  const code = `
     import * as React from "react"
     
     let $b = 2;
@@ -53,15 +53,15 @@ test('Check Functional Scope', (t) => {
         </div>;
     }`
 
-	const result = compile(code)
-	if (!result) {
-		return t.fail()
-	}
-	t.snapshot(result.code)
+  const result = compile(code)
+  if (!result) {
+    return t.fail()
+  }
+  t.snapshot(result.code)
 })
 
 test('Check Arrow Function Scope', (t) => {
-	const code = `
+  const code = `
     import * as React from "react";
 
     let $b = 2;
@@ -83,15 +83,15 @@ test('Check Arrow Function Scope', (t) => {
     };
     `
 
-	const result = compile(code)
-	if (!result) {
-		return t.fail()
-	}
-	t.snapshot(result.code)
+  const result = compile(code)
+  if (!result) {
+    return t.fail()
+  }
+  t.snapshot(result.code)
 })
 
 test('Multi Component Scope', (t) => {
-	const code = `
+  const code = `
 import * as React from "react";
 
 let $b = 2;
@@ -129,9 +129,9 @@ const ComponentTwo = () => {
 };
 `
 
-	const result = compile(code)
-	if (!result) {
-		return t.fail()
-	}
-	t.snapshot(result.code)
+  const result = compile(code)
+  if (!result) {
+    return t.fail()
+  }
+  t.snapshot(result.code)
 })
