@@ -7,6 +7,9 @@
   "engines": {
     "node": ">=12"
   },
+  "files": [
+    "dist/*"
+  ],
   "exports": {
     "./package.json": "./package.json",
     ".": {
