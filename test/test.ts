@@ -135,3 +135,34 @@ test('Multi Component Scope', (t) => {
   }
   t.snapshot(result.code)
 })
+
+test('Hook Function and useEffect dep', (t) => {
+  const code = `
+    import * as React from "react";
+
+    const useCustomHook = () => {
+    let $a = 1;
+
+
+    React.useEffect(()=>{
+      console.log("updated");
+    },[$a])
+
+
+    const onPress = () => {
+        $a += 1;
+    };
+
+    return {
+      a:$a,
+      onPress
+    }
+  }
+`
+
+  const result = compile(code)
+  if (!result) {
+    return t.fail()
+  }
+  t.snapshot(result.code)
+})
