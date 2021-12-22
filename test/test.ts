@@ -166,3 +166,90 @@ test('Hook Function and useEffect dep', (t) => {
   }
   t.snapshot(result.code)
 })
+
+test('Singular Binary Expressions', (t) => {
+  const code = `
+  import React from "react";
+  
+  export default function App() {
+    let $count = 1;
+  
+    const handleClick = () => {
+      $count = $count + 1;
+      $count = $count * 2;
+    };
+  
+    return (
+      <div>
+        <h1>{$count}</h1>
+        <button onClick={handleClick}>Click</button>
+      </div>
+    );
+  }
+  `
+  const result = compile(code)
+  if (!result) {
+    return t.fail()
+  }
+  t.snapshot(result.code)
+})
+
+test('Object Update', (t) => {
+  const code = `
+  import * as React from "react";
+  
+  function App() {
+    let $user = { name: "reaper" };
+    const updateUser = () => {
+      const x = {
+        ...$user
+      };
+      x.name = "barelyhuman";
+      $user = x;
+    };
+    return (
+      <>
+        <p>{$user.name}</p>
+        <button onClick={updateUser}>Click Me</button>
+      </>
+    );
+  }
+  `
+
+  const result = compile(code)
+  if (!result) {
+    return t.fail()
+  }
+  t.snapshot(result.code)
+})
+
+test('Array Update', (t) => {
+  const code = `
+  import * as React from "react";
+  
+  function App() {
+    let $users = [{ name: "reaper" }];
+
+    const updateUser = () => {
+      const _nextUsers =$users.slice();
+      _nextUsers[0].name = "barelyhuman"
+      $user = _nextUsers;
+    };
+
+    return (
+      <>
+      {$users.map(user=>{
+        return <p>{user.name}</p>
+      })}
+      <button onClick={updateUser}>Click Me</button>
+      </>
+    );
+  }
+  `
+
+  const result = compile(code)
+  if (!result) {
+    return t.fail()
+  }
+  t.snapshot(result.code)
+})
