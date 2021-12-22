@@ -44,7 +44,7 @@ function transformToStateByScope(path: any, toMod: ToModifyVariableI[]) {
       }
     },
     VariableDeclaration({node}: {node: t.VariableDeclaration}) {
-      transformReactiveDeclarations(node, toMod)
+      transformReactiveDeclarations(node, toMod, path)
     },
     ExpressionStatement({node}: {node: t.ExpressionStatement}) {
       transformAssignmentExpression(node, toMod)
@@ -54,7 +54,8 @@ function transformToStateByScope(path: any, toMod: ToModifyVariableI[]) {
 
 function transformReactiveDeclarations(
   node: t.VariableDeclaration,
-  toMod: ToModifyVariableI[]
+  toMod: ToModifyVariableI[],
+  path: any
 ) {
   for (let i = 0; i < node.declarations.length; i += 1) {
     const declaration = node.declarations[i]
@@ -82,6 +83,9 @@ function transformReactiveDeclarations(
         declaration.init ? [declaration.init] : []
       )
     )
+
+    // fallback to replace missed instances of the variable
+    path.scope.rename(declaration.id.name, normName)
   }
 }
 
