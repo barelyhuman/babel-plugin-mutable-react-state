@@ -11,44 +11,71 @@
 
 Check [this issue](https://github.com/barelyhuman/babel-plugin-mutable-react-state/issues/4)
 
-
 ## Notes
-- While the caveats exist due to the extensive types of expressions that javascript has, it's recommended that you use a cloned variable and then just assigned the modification to the reactive variable if you plan to use it right now. 
+
+- While the caveats exist due to the extensive types of expressions that javascript has, it's recommended that you use a cloned variable and then just assigned the modification to the reactive variable if you plan to use it right now.
+
 ```jsx
+function Component() {
+  let $text = ''
 
-function Component(){
-  let $text = "";
-  
-  return <> 
-    <input value={$text}  onChange={e=> {
-      $text = e.target.value;
-      // some code 
-      
-      // won't work...
-      $text = $text.toUpperCase()
-    }}/>
-  </>
+  return (
+    <>
+      <input
+        value={$text}
+        onChange={(e) => {
+          $text = e.target.value
+          // some code
+
+          // won't work...
+          $text = $text.toUpperCase()
+        }}
+      />
+    </>
+  )
 }
 
-// CAN be written as 
+// CAN be written as
 
-function Component(){
-  let $text = "";
-  
-  return <> 
-    <input value={$text}  onChange={e=> {
-      const val = e.target.value;
-      // some code 
-      
-      // will work...
-      $text = val.toUpperCase()
-    }}/>
-  </>
+function Component() {
+  let $text = ''
+
+  return (
+    <>
+      <input
+        value={$text}
+        onChange={(e) => {
+          const val = e.target.value
+          // some code
+
+          // will work...
+          $text = val.toUpperCase()
+        }}
+      />
+    </>
+  )
 }
-
 ```
 
+- This is still react state so you cannot do dependent state updates at once,
 
+```jsx
+// the value of `length` will still be the older value of $text and not the latest one
+changeHandler(){
+  $text = value
+  $length = $text.length
+}
+
+// you'll still have to consider that dependent values need to be handled with useEffect
+
+useEffect(()=>{
+  $length = $text.length
+},[$text])
+
+changeHandler(){
+  $text = value
+}
+```
 
 ## Install
 
