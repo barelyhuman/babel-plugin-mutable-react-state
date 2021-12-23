@@ -9,8 +9,46 @@
 
 ## Caveats (for now)
 
-- Doesn't support pragma right now
-- Update Expressions aren't supported (eg: variableName++) on numbers won't work.
+Check [this issue](https://github.com/barelyhuman/babel-plugin-mutable-react-state/issues/4)
+
+
+## Notes
+- While the caveats exist due to the extensive types of expressions that javascript has, it's recommended that you use a cloned variable and then just assigned the modification to the reactive variable if you plan to use it right now. 
+```jsx
+
+function Component(){
+  let $text = "";
+  
+  return <> 
+    <input value={$text}  onChange={e=> {
+      $text = e.target.value;
+      // some code 
+      
+      // won't work...
+      $text = $text.toUpperCase()
+    }}/>
+  </>
+}
+
+// CAN be written as 
+
+function Component(){
+  let $text = "";
+  
+  return <> 
+    <input value={$text}  onChange={e=> {
+      const val = e.target.value;
+      // some code 
+      
+      // will work...
+      $text = val.toUpperCase()
+    }}/>
+  </>
+}
+
+```
+
+
 
 ## Install
 
