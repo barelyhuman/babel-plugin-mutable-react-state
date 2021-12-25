@@ -33,6 +33,59 @@ test('Simple Transform', (t) => {
   t.snapshot(result.code)
 })
 
+test('Simple Transform 2', (t) => {
+  const code = `
+    import * as React from "react"
+    
+    function Component(){
+        let $a = 1;
+    
+        const onPress = () => {
+            $a = (x) => {
+              console.log(x);
+              return x+1
+            }
+        }
+    
+        return <div>
+            <p>{$a}</p>
+            <button onClick={onPress}>Press</button>
+        </div>;
+    }
+    `
+
+  const result = compile(code)
+  if (!result) {
+    return t.fail()
+  }
+  t.snapshot(result.code)
+})
+
+test('Simple Transform 3', (t) => {
+  const code = `
+    import * as React from "react"
+    
+    function Component(){
+        let $a = "";
+    
+        const onChange = (e) => {
+            $a = e.target.value;
+            $a = $a.toUpperCase();
+        }
+    
+        return <div>
+            <input value={$a} onChange={onChange} />
+        </div>;
+    }
+    `
+
+  const result = compile(code)
+  if (!result) {
+    return t.fail()
+  }
+  t.snapshot(result.code)
+})
+
 test('Check Functional Scope', (t) => {
   const code = `
     import * as React from "react"
@@ -191,6 +244,7 @@ test('Singular Binary Expressions', (t) => {
   if (!result) {
     return t.fail()
   }
+
   t.snapshot(result.code)
 })
 
@@ -220,6 +274,32 @@ test('Object Update', (t) => {
   if (!result) {
     return t.fail()
   }
+
+  t.snapshot(result.code)
+})
+
+test('Object Update Arrow Func', (t) => {
+  const code = `
+  import * as React from "react";
+  
+  function App() {
+    let $user = { name: "reaper" };
+    const updateUser = () => {
+      $user = x => Object.assign({},{x},{name:"barelyhuman"});
+    };
+    return (
+      <>
+        <p>{$user.name}</p>
+        <button onClick={updateUser}>Click Me</button>
+      </>
+    );
+  }
+  `
+
+  const result = compile(code)
+  if (!result) {
+    return t.fail()
+  }
   t.snapshot(result.code)
 })
 
@@ -233,7 +313,7 @@ test('Array Update', (t) => {
     const updateUser = () => {
       const _nextUsers =$users.slice();
       _nextUsers[0].name = "barelyhuman"
-      $user = _nextUsers;
+      $users = _nextUsers;
     };
 
     return (
@@ -251,6 +331,7 @@ test('Array Update', (t) => {
   if (!result) {
     return t.fail()
   }
+
   t.snapshot(result.code)
 })
 
