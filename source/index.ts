@@ -5,7 +5,7 @@ interface ToModifyVariableI {
   simplified: string
 }
 
-export default function () {
+export default function toMutableTransformer() {
   const toMod: ToModifyVariableI[] = []
   return {
     visitor: {
@@ -46,8 +46,20 @@ function transformToStateByScope(path: any, toMod: ToModifyVariableI[]) {
     VariableDeclaration({node}: {node: t.VariableDeclaration}) {
       transformReactiveDeclarations(node, toMod, path)
     },
-    ExpressionStatement({node}: {node: t.ExpressionStatement}) {
-      transformAssignmentExpression(node, toMod)
+    ExpressionStatement(expressionPath: any) {
+      const node: t.ExpressionStatement = expressionPath.node
+      const replacedStateExpression = transformAssignmentExpression(
+        node,
+        toMod,
+        expressionPath
+      )
+
+      // HACK: any identifier inside the replace expression that is reactive to change itself to
+      // the substate name so $a => a => _prevState
+      if (replacedStateExpression) {
+        const {subStateIdentifier, normName} = replacedStateExpression
+        replaceIdentifiers(expressionPath, normName, subStateIdentifier.name)
+      }
     },
   })
 }
@@ -91,7 +103,8 @@ function transformReactiveDeclarations(
 
 function transformAssignmentExpression(
   node: t.ExpressionStatement,
-  toMod: ToModifyVariableI[]
+  toMod: ToModifyVariableI[],
+  path: any
 ) {
   if (!t.isAssignmentExpression(node.expression)) {
     return
@@ -111,47 +124,52 @@ function transformAssignmentExpression(
   const normName = normalizeName(expression.left.name)
   const setterName = getSetterName(normName)
 
-  let callArgs: t.Expression[]
+  const subStateIdentifier: t.Identifier =
+    path.scope.generateUidIdentifier('prevState')
+
+  let params: any = {}
 
   switch (expression.operator) {
     case '=': {
-      callArgs = [{...expression.right}]
+      params = expression.right
       break
     }
 
     case '+=': {
-      callArgs = [
-        t.binaryExpression('+', t.identifier(normName), expression.right),
-      ]
+      params = t.binaryExpression('+', subStateIdentifier, expression.right)
       break
     }
 
     case '-=': {
-      callArgs = [
-        t.binaryExpression('-', t.identifier(normName), expression.right),
-      ]
+      params = t.binaryExpression('-', subStateIdentifier, expression.right)
       break
     }
 
     case '/=': {
-      callArgs = [
-        t.binaryExpression('/', t.identifier(normName), expression.right),
-      ]
+      params = t.binaryExpression('/', subStateIdentifier, expression.right)
+
       break
     }
 
     case '*=': {
-      callArgs = [
-        t.binaryExpression('*', t.identifier(normName), expression.right),
-      ]
+      params = t.binaryExpression('*', subStateIdentifier, expression.right)
       break
     }
     default: {
-      callArgs = []
+      params = []
     }
   }
 
-  node.expression = t.callExpression(t.identifier(setterName), callArgs)
+  let arrowExpression = params
+  if (!t.isArrowFunctionExpression(params)) {
+    arrowExpression = t.arrowFunctionExpression([subStateIdentifier], params)
+  }
+
+  node.expression = t.callExpression(t.identifier(setterName), [
+    arrowExpression,
+  ])
+
+  return {subStateIdentifier, normName, setterName}
 }
 
 function isReactiveIdentifier(idName: string, modMap: ToModifyVariableI[]) {
@@ -168,4 +186,14 @@ function getSetterName(normalizedName: string) {
 
 function normalizeName(n: string) {
   return n.replace(/\$/, '')
+}
+
+function replaceIdentifiers(path: any, toCompare: string, replaceWith: string) {
+  return path.traverse({
+    Identifier({node}: {node: t.Identifier}) {
+      if (node.name === toCompare) {
+        node.name = replaceWith
+      }
+    },
+  })
 }
