@@ -291,7 +291,7 @@ const Component = () => {
   if (!result) {
     return t.fail()
   }
-  console.log(result.code)
+  t.snapshot(result.code)
 })
 
 test.skip('Read executed state value', (t) => {
