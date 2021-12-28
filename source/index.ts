@@ -6,50 +6,36 @@ interface ToModifyVariableI {
 }
 
 export default function () {
-  const toMod: ToModifyVariableI[] = []
+  let toMod: ToModifyVariableI[] = []
   return {
     visitor: {
-      FunctionDeclaration(path: any) {
-        transformToStateByScope(path, toMod)
+      VariableDeclaration(path: any) {
+        toMod = toMod.concat(getReactiveVariablesFromScope(path.scope))
+        const {node}: {node: t.VariableDeclaration} = path
+        transformReactiveDeclarations(node, toMod, path)
       },
-      ArrowFunctionExpression(path: any) {
-        transformToStateByScope(path, toMod)
+      Identifier(path: any) {
+        const {node}: {node: t.Identifier} = path
+        if (
+          !t.isUpdateExpression(path.parentPath) &&
+          !t.isAssignmentExpression(path.parentPath) &&
+          !t.isCallExpression(path.parentPath)
+        ) {
+          if (isReactiveIdentifier(node.name, toMod)) {
+            path.replaceWith(getStateTuple(node.name))
+          }
+        }
+      },
+      ExpressionStatement({node}: {node: t.ExpressionStatement}) {
+        transformAssignmentExpression(node, toMod)
+      },
+      CallExpression(path: any) {
+        if (isReadingReactiveValue(path.node, toMod)) {
+          path.replaceWith(getNormalIdentifierFromCall(path.node))
+        }
       },
     },
   }
-}
-
-function transformToStateByScope(path: any, toMod: ToModifyVariableI[]) {
-  // TODO: check if the returned values are of the form `React.createElement`
-  // NOTE: can avoid the above one since custom hooks won't be able to use this
-
-  Object.keys(path.scope.bindings).forEach((binding) => {
-    if (/^\$/.test(binding)) {
-      // add to list of identifiers to compare and replace
-      // (not using scope replace to avoid shadow variables being replaced)
-      const normName = normalizeName(binding)
-      toMod.push({
-        raw: binding,
-        simplified: normName,
-      })
-    }
-  })
-
-  // nested traverse to avoid replacing bindings of anything other than what's in this
-  // function. To prevent creating state hooks outside a function
-  path.traverse({
-    Identifier({node}: {node: t.Identifier}) {
-      if (isReactiveIdentifier(node.name, toMod)) {
-        node.name = normalizeName(node.name)
-      }
-    },
-    VariableDeclaration({node}: {node: t.VariableDeclaration}) {
-      transformReactiveDeclarations(node, toMod, path)
-    },
-    ExpressionStatement({node}: {node: t.ExpressionStatement}) {
-      transformAssignmentExpression(node, toMod)
-    },
-  })
 }
 
 function transformReactiveDeclarations(
@@ -85,7 +71,7 @@ function transformReactiveDeclarations(
     )
 
     // fallback to replace missed instances of the variable
-    path.scope.rename(declaration.id.name, normName)
+    // path.scope.rename(declaration.id.name, normName)
   }
 }
 
@@ -155,9 +141,7 @@ function transformAssignmentExpression(
 }
 
 function isReactiveIdentifier(idName: string, modMap: ToModifyVariableI[]) {
-  return (
-    modMap.findIndex((x) => x.raw === idName || x.simplified === idName) > -1
-  )
+  return modMap.findIndex((x) => x.raw === idName) > -1
 }
 
 function getSetterName(normalizedName: string) {
@@ -168,4 +152,50 @@ function getSetterName(normalizedName: string) {
 
 function normalizeName(n: string) {
   return n.replace(/\$/, '')
+}
+
+function getStateTuple(reactiveVaribleName: string) {
+  const name = normalizeName(reactiveVaribleName)
+  const setter = getSetterName(name)
+  return t.arrayExpression([t.identifier(name), t.identifier(setter)])
+}
+
+function getNormalIdentifierFromCall(node: t.CallExpression) {
+  if (!t.isIdentifier(node.callee)) {
+    return
+  }
+
+  const name = normalizeName(node.callee.name)
+  return t.identifier(name)
+}
+
+function isReadingReactiveValue(
+  node: t.CallExpression,
+  modMap: ToModifyVariableI[]
+) {
+  if (
+    !(
+      t.isIdentifier(node.callee) &&
+      isReactiveIdentifier(node.callee.name, modMap)
+    )
+  ) {
+    return false
+  }
+  return true
+}
+
+function getReactiveVariablesFromScope(scope: any) {
+  const toMod: ToModifyVariableI[] = []
+  Object.keys(scope.bindings).forEach((binding) => {
+    if (/^\$/.test(binding)) {
+      // add to list of identifiers to compare and replace
+      // (not using scope replace to avoid shadow variables being replaced)
+      const normName = normalizeName(binding)
+      toMod.push({
+        raw: binding,
+        simplified: normName,
+      })
+    }
+  })
+  return toMod
 }

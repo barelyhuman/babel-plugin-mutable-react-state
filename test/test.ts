@@ -8,7 +8,7 @@ const compile = (code: string) =>
     plugins: [plugin],
   })
 
-test('Simple Transform', (t) => {
+test.skip('Simple Transform', (t) => {
   const code = `
     import * as React from "react"
     
@@ -33,7 +33,7 @@ test('Simple Transform', (t) => {
   t.snapshot(result.code)
 })
 
-test('Check Functional Scope', (t) => {
+test.skip('Check Functional Scope', (t) => {
   const code = `
     import * as React from "react"
     
@@ -60,7 +60,7 @@ test('Check Functional Scope', (t) => {
   t.snapshot(result.code)
 })
 
-test('Check Arrow Function Scope', (t) => {
+test.skip('Check Arrow Function Scope', (t) => {
   const code = `
     import * as React from "react";
 
@@ -90,7 +90,7 @@ test('Check Arrow Function Scope', (t) => {
   t.snapshot(result.code)
 })
 
-test('Multi Component Scope', (t) => {
+test.skip('Multi Component Scope', (t) => {
   const code = `
     import * as React from "react";
 
@@ -136,7 +136,7 @@ test('Multi Component Scope', (t) => {
   t.snapshot(result.code)
 })
 
-test('Hook Function and useEffect dep', (t) => {
+test.skip('Hook Function and useEffect dep', (t) => {
   const code = `
     import * as React from "react";
 
@@ -167,7 +167,7 @@ test('Hook Function and useEffect dep', (t) => {
   t.snapshot(result.code)
 })
 
-test('Singular Binary Expressions', (t) => {
+test.skip('Singular Binary Expressions', (t) => {
   const code = `
   import React from "react";
   
@@ -194,7 +194,7 @@ test('Singular Binary Expressions', (t) => {
   t.snapshot(result.code)
 })
 
-test('Object Update', (t) => {
+test.skip('Object Update', (t) => {
   const code = `
   import * as React from "react";
   
@@ -223,7 +223,7 @@ test('Object Update', (t) => {
   t.snapshot(result.code)
 })
 
-test('Array Update', (t) => {
+test.skip('Array Update', (t) => {
   const code = `
   import * as React from "react";
   
@@ -252,4 +252,60 @@ test('Array Update', (t) => {
     return t.fail()
   }
   t.snapshot(result.code)
+})
+
+test('state passed around functions', (t) => {
+  const code = `
+function useCustomHook(){
+  let $x = {name:"reaper"};
+  
+  const addAge = () => {
+    $x = {
+      ...$x(),
+      age:18
+    }
+  }
+  return [...$x,addAge];
+}
+
+const Component = () => {
+  let [x, setX, addAge] = useCustomHook();
+  const updateName = () => {
+    setX({
+      ...x,
+      name: "name",
+    });
+  };
+  return (
+    <>
+      {x.name}
+      {x.age}
+      <button onClick={updateName}>update</button>
+      <button onClick={addAge}>addAge</button>
+    </>
+  );
+};
+  `
+
+  const result = compile(code)
+  if (!result) {
+    return t.fail()
+  }
+  t.snapshot(result.code)
+})
+
+test.skip('Read executed state value', (t) => {
+  const code = `
+function Component(){
+  let $x = 1;
+  console.log($x())
+  return <></>
+}
+  `
+
+  const result = compile(code)
+  if (!result) {
+    return t.fail()
+  }
+  console.log(result.code)
 })
