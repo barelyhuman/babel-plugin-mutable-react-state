@@ -1,6 +1,6 @@
 import test from 'ava'
 import {transform} from '@babel/core'
-import plugin from '../'
+import plugin from '../source/index'
 
 const compile = (code: string) =>
   transform(code, {
@@ -241,6 +241,40 @@ test('Array Update', (t) => {
       {$users.map(user=>{
         return <p>{user.name}</p>
       })}
+      <button onClick={updateUser}>Click Me</button>
+      </>
+    );
+  }
+  `
+
+  const result = compile(code)
+  if (!result) {
+    return t.fail()
+  }
+  t.snapshot(result.code)
+})
+
+test('Mix and Match State', (t) => {
+  const code = `
+  import * as React from "react";
+  
+  function App() {
+    let $users = [{ name: "reaper" }];
+    const [updateCount,setUpdateCount] = React.useState(1);
+
+    const updateUser = () => {
+      const _nextUsers =$users.slice();
+      _nextUsers[0].name = "barelyhuman"
+      $user = _nextUsers;
+      setUpdateCount(updateCount+1)
+    };
+
+    return (
+      <>
+      {$users.map(user=>{
+        return <p>{user.name}</p>
+      })}
+      <p>{updateCount}</p>
       <button onClick={updateUser}>Click Me</button>
       </>
     );
