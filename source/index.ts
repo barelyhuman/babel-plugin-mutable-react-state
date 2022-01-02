@@ -48,6 +48,7 @@ function transformToStateByScope(path: any, toMod: ToModifyVariableI[]) {
     },
     ExpressionStatement({node}: {node: t.ExpressionStatement}) {
       transformAssignmentExpression(node, toMod)
+      transformUpdateExpression(node, toMod)
     },
   })
 }
@@ -148,6 +149,47 @@ function transformAssignmentExpression(
     }
     default: {
       callArgs = []
+    }
+  }
+
+  node.expression = t.callExpression(t.identifier(setterName), callArgs)
+}
+
+function transformUpdateExpression(
+  node: t.ExpressionStatement,
+  toMod: ToModifyVariableI[]
+) {
+  if (!t.isUpdateExpression(node.expression)) {
+    return
+  }
+
+  const expression: t.UpdateExpression = node.expression
+
+  if (!t.isIdentifier(expression.argument)) {
+    return
+  }
+
+  if (!isReactiveIdentifier(expression.argument.name, toMod)) {
+    return
+  }
+
+  const normName = normalizeName(expression.argument.name)
+  const setterName = getSetterName(normName)
+
+  let callArgs: t.Expression[]
+
+  switch (expression.operator) {
+    case '++': {
+      callArgs = [
+        t.binaryExpression('+', t.identifier(normName), t.numericLiteral(1)),
+      ]
+      break
+    }
+    case '--': {
+      callArgs = [
+        t.binaryExpression('-', t.identifier(normName), t.numericLiteral(1)),
+      ]
+      break
     }
   }
 

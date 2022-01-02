@@ -287,3 +287,34 @@ test('Mix and Match State', (t) => {
   }
   t.snapshot(result.code)
 })
+
+test('Update Expression Test', (t) => {
+  const code = `
+  import * as React from "react";
+  
+  function App() {
+    let $count = 1;
+
+    const updateUser = () => {
+      count++;
+      count--;
+    };
+
+    return (
+      <>
+      {$users.map(user=>{
+        return <p>{user.name}</p>
+      })}
+      <p>{updateCount}</p>
+      <button onClick={updateUser}>Click Me</button>
+      </>
+    );
+  }
+  `
+
+  const result = compile(code)
+  if (!result) {
+    return t.fail()
+  }
+  t.snapshot(result.code)
+})
