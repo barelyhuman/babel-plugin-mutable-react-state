@@ -15,5 +15,5 @@ developed so if you do decide to use it, I'd consider using strict
 version checks on your `package.json`
 
 <p align="center">
-    <a href="/#/docs" class="link section-title">Get Started →</a>
+    <a href="#/docs" class="link section-title">Get Started →</a>
 </p>
